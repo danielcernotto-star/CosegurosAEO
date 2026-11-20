@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important} body{margin:0}</style>
+<title>Coseguros AEO</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@600;700&display=swap">
+<style>
+/* Layout: one centered column; sticky search bar, plan selector, result cards with a per-plan value strip */
+:root {
+  --bg: #f3f6f7;
+  --surface: #ffffff;
+  --ink: #15262b;
+  --muted: #5b6e73;
+  --line: #d9e2e4;
+  --accent: #0e6f78;
+  --accent-soft: #dcefef;
+  --warn: #8a5300;
+  --warn-soft: #fbefd9;
+  --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Consolas", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1a1d; --surface: #16252a; --ink: #e4eef0; --muted: #93a8ad; --line: #27393e;
+  --accent: #5cc3cb; --accent-soft: #173b40; --warn: #f2b860; --warn-soft: #3a2c14; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1a1d; --surface: #16252a; --ink: #e4eef0; --muted: #93a8ad; --line: #27393e;
+  --accent: #5cc3cb; --accent-soft: #173b40; --warn: #f2b860; --warn-soft: #3a2c14; color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 20px 48px; display: flex; flex-direction: column; gap: 16px; }
+header { display: flex; flex-direction: column; gap: 2px; }
+h1 { font-family: var(--font-display); font-size: 1.55rem; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 0.9rem; }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  padding-block: 10px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid var(--line); }
+.search { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1.5px solid var(--line);
+  border-radius: 10px; padding: 0 12px; }
+.search:focus-within { border-color: var(--accent); }
+.search svg { flex: none; color: var(--muted); }
+#q { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink);
+  font: inherit; font-size: 1.05rem; padding: 12px 0; }
+#q::-webkit-search-cancel-button { display: none; }
+#clear { border: 0; background: none; color: var(--muted); font: inherit; cursor: pointer; padding: 6px; }
+.plans { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.plans .lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-right: 4px; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 0.9rem;
+  padding: 5px 12px; border-radius: 999px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 600; }
+.chip:focus-visible, #clear:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.count { color: var(--muted); font-size: 0.85rem; }
+#list { display: flex; flex-direction: column; gap: 10px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.top { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.code { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); background: var(--accent-soft);
+  padding: 2px 7px; border-radius: 5px; white-space: nowrap; }
+.name { font-weight: 500; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+.tag { border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; }
+.vals { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
+.val { border-top: 2px solid var(--line); padding-top: 6px; display: flex; flex-direction: column; }
+.val .p { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.val .n { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.val.on { border-top-color: var(--accent); }
+.single { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  border-top: 2px solid var(--accent); padding-top: 8px; }
+.single .n { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.single .p { color: var(--muted); font-size: 0.9rem; }
+.notice { background: var(--warn-soft); color: var(--warn); border-radius: 8px; padding: 10px 12px; font-weight: 600; }
+.notice small { display: block; font-weight: 400; }
+.hon { font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.empty, .err { text-align: center; color: var(--muted); padding: 32px 8px; }
+.err { color: var(--warn); }
+mark { background: var(--accent-soft); color: inherit; border-radius: 2px; }
+footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--line); padding-top: 12px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Coseguros AEO</h1>
+    <div class="sub" id="vigencia">Cargando nomenclador…</div>
+  </header>
+
+  <div class="bar">
+    <label class="search" for="q">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <input id="q" type="search" autocomplete="off" placeholder="Código (ej. PC.01.02) o nombre (ej. catarata)" aria-label="Buscar práctica por código o nombre">
+      <button id="clear" type="button" hidden aria-label="Borrar búsqueda">✕</button>
+    </label>
+    <div class="plans" id="plans" role="group" aria-label="Plan del afiliado"><span class="lbl">Plan</span></div>
+  </div>
+
+  <div class="count" id="count"></div>
+  <div id="list"><div class="empty">Cargando…</div></div>
+
+  <footer>
+    <div>Coseguro = honorario × porcentaje del plan, redondeado a $100. Valores en pesos, sin IVA.</div>
+    <div>Prácticas quirúrgicas y de láser, y las marcadas "por ojo": el valor es por cada ojo.</div>
+    <div id="fuente"></div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function () {
+  // Archivos que se buscan, en orden. Javier reemplaza este archivo para actualizar valores.
+  var DATA_FILES = ["aranceles.xlsx", "aranceles.xls"];
+  var CODE_RE = /^[A-Z]{2}\.\d{2}\.\d{2}$/i;
+  var AUDIT_TEXT = "Coseguro definido por auditor";
+
+  var state = { items: [], plans: [], plan: "todos" };
+  try { var saved = localStorage.getItem("coseguros-plan"); if (saved) state.plan = saved; } catch (e) {}
+
+  var $ = function (id) { return document.getElementById(id); };
+  var money = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
+
+  function clean(s) { return String(s == null ? "" : s).replace(/ /g, " ").replace(/\s+/g, " ").trim(); }
+  function fold(s) { return clean(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+  function codeKey(s) { return String(s).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+  function isNum(v) { return typeof v === "number" && isFinite(v); }
+  function yes(v) { return /^(s|si|sí|x|1|true|auditable)$/i.test(clean(v)); }
+  function round100(v) { return Math.round(v / 100) * 100; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  function parse(wb) {
+    var sheetName = wb.SheetNames.find(function (n) { return !/audit/i.test(n); }) || wb.SheetNames[0];
+    var rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, raw: true, defval: null });
+    var title = "", plans = null, honCol = 2, auditCol = -1, section = "", sub = "", items = [];
+
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i] || [];
+      var a = clean(r[0]), b = clean(r[1]);
+      if (!title && /nomenclador/i.test(a)) title = a;
+      if (/^observaciones/i.test(a)) break;
+
+      // Fila de encabezados: define columnas de planes, honorarios y "Auditable"
+      var planCols = [];
+      r.forEach(function (c, j) {
+        var t = clean(c);
+        if (/^plan\b/i.test(t)) planCols.push({ col: j, label: t.replace(/^plan\s*/i, "").toUpperCase() });
+        if (/honorario/i.test(t)) honCol = j;
+        if (/audit/i.test(t)) auditCol = j;
+      });
+      if (/^codigo$/i.test(a) && b) { section = b; sub = ""; }
+      if (planCols.length && !plans) {
+        // Porcentajes: la fila numérica más cercana por encima del encabezado
+        for (var k = i - 1; k >= 0; k--) {
+          var pr = rows[k] || [];
+          if (planCols.every(function (p) { return isNum(pr[p.col]); })) {
+            planCols.forEach(function (p) { var v = pr[p.col]; p.pct = v > 1 ? v / 100 : v; });
+            break;
+          }
+        }
+        plans = planCols.filter(function (p) { return isNum(p.pct); });
+        continue;
+      }
+      if (CODE_RE.test(a)) {
+        var hon = r[honCol];
+        var porOjo = /\(\*\)/.test(b);
+        items.push({
+          code: a.toUpperCase(), name: clean(b.replace(/\(\*\)/g, "")).replace(/[:\s]+$/, ""),
+          section: section, sub: sub, hon: isNum(hon) ? hon : null, honText: isNum(hon) ? "" : clean(hon),
+          porOjo: porOjo, auditable: auditCol >= 0 && yes(r[auditCol])
+        });
+      } else if (a && !b && !/^[*(]/.test(a) && !/^codigo$/i.test(a)) {
+        sub = a.replace(/:$/, "");
+      }
+    }
+
+    // Hoja aparte con la lista de códigos auditables (cualquier celda con un código)
+    var aud = {};
+    wb.SheetNames.filter(function (n) { return /audit/i.test(n); }).forEach(function (n) {
+      XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: false, defval: null }).forEach(function (row) {
+        (row || []).forEach(function (c) { var t = clean(c); if (CODE_RE.test(t)) aud[t.toUpperCase()] = 1; });
+      });
+    });
+    items.forEach(function (it) { if (aud[it.code]) it.auditable = true; it.key = codeKey(it.code); it.text = fold(it.name + " " + it.section + " " + it.sub); });
+
+    if (!plans || !plans.length) throw new Error("No encontré las columnas de planes (encabezados que empiecen con \"PLAN\").");
+    if (!items.length) throw new Error("No encontré prácticas con código (formato XX.00.00) en la columna A.");
+    return { title: title, plans: plans, items: items, sheet: sheetName };
+  }
+
+  function load() {
+    if (window.EMBEDDED_XLS) return Promise.resolve({ file: "aranceles.xls (vista previa)", wb: XLSX.read(window.EMBEDDED_XLS, { type: "base64" }) });
+    var tries = DATA_FILES.slice();
+    function next() {
+      if (!tries.length) return Promise.reject(new Error("No se encontró el archivo de aranceles (" + DATA_FILES.join(" o ") + ")."));
+      var f = tries.shift();
+      return fetch(f + "?v=" + Date.now(), { cache: "no-store" }).then(function (res) {
+        if (!res.ok) return next();
+        return res.arrayBuffer().then(function (buf) { return { file: f, wb: XLSX.read(buf, { type: "array" }) }; });
+      }, next);
+    }
+    return next();
+  }
+
+  function renderPlans() {
+    var box = $("plans");
+    var opts = [{ id: "todos", label: "Todos" }].concat(state.plans.map(function (p) { return { id: p.label, label: p.label }; }));
+    if (!opts.some(function (o) { return o.id === state.plan; })) state.plan = "todos";
+    box.querySelectorAll(".chip").forEach(function (c) { c.remove(); });
+    opts.forEach(function (o) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.textContent = o.label;
+      b.setAttribute("aria-pressed", String(o.id === state.plan));
+      b.addEventListener("click", function () {
+        state.plan = o.id;
+        try { localStorage.setItem("coseguros-plan", o.id); } catch (e) {}
+        renderPlans(); render();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function highlight(text, words) {
+    var src = fold(text), mask = new Array(text.length).fill(false);
+    if (src.length !== text.length) return esc(text);
+    words.forEach(function (w) {
+      if (w.length < 2) return;
+      var from = 0, idx;
+      while ((idx = src.indexOf(w, from)) >= 0) { for (var i = idx; i < idx + w.length; i++) mask[i] = true; from = idx + w.length; }
+    });
+    var out = "", open = false;
+    for (var i = 0; i < text.length; i++) {
+      if (mask[i] && !open) { out += "<mark>"; open = true; }
+      if (!mask[i] && open) { out += "</mark>"; open = false; }
+      out += esc(text[i]);
+    }
+    return out + (open ? "</mark>" : "");
+  }
+
+  function matches(it, q) {
+    if (!q) return true;
+    var k = codeKey(q);
+    if (k.length >= 2 && /\d/.test(k) && it.key.indexOf(k) === 0) return true;
+    return fold(q).split(" ").every(function (w) { return it.text.indexOf(w) >= 0 || it.key.indexOf(codeKey(w)) >= 0 && codeKey(w); });
+  }
+
+  function valueHtml(it, p) {
+    if (it.hon == null) return "Consultar";
+    return money.format(round100(it.hon * p.pct));
+  }
+
+  function card(it, words) {
+    var html = '<div class="card"><div class="top"><span class="code">' + esc(it.code) + '</span><span class="name">' +
+      highlight(it.name, words) + "</span></div>";
+    html += '<div class="meta"><span>' + esc(it.section + (it.sub ? " · " + it.sub : "")) + "</span>" + (it.porOjo ? '<span class="tag">Por ojo</span>' : "") + "</div>";
+    if (it.auditable) {
+      html += '<div class="notice">' + AUDIT_TEXT + "<small>Práctica auditable: el coseguro lo informa el auditor de la mutual.</small></div>";
+    } else if (it.hon == null) {
+      html += '<div class="notice">Sin honorario fijo en el nomenclador' + (it.honText ? " (" + esc(it.honText) + ")" : "") + "<small>Consultar el coseguro con la mutual.</small></div>";
+    } else if (state.plan !== "todos") {
+      var p = state.plans.find(function (x) { return x.label === state.plan; });
+      html += '<div class="single"><span class="p">Plan ' + esc(p.label) + " · " + Math.round(p.pct * 100) + '% del honorario</span><span class="n">' + valueHtml(it, p) + "</span></div>";
+    } else {
+      html += '<div class="vals">' + state.plans.map(function (p) {
+        return '<div class="val"><span class="p">Plan ' + esc(p.label) + " · " + Math.round(p.pct * 100) + '%</span><span class="n">' + valueHtml(it, p) + "</span></div>";
+      }).join("") + "</div>";
+    }
+    if (it.hon != null) html += '<div class="hon">Honorario: ' + money.format(it.hon) + "</div>";
+    return html + "</div>";
+  }
+
+  function render() {
+    var q = clean($("q").value);
+    $("clear").hidden = !q;
+    var words = fold(q).split(" ").filter(Boolean);
+    var res = state.items.filter(function (it) { return matches(it, q); });
+    $("count").textContent = q ? res.length + (res.length === 1 ? " práctica encontrada" : " prácticas encontradas") : state.items.length + " prácticas en el nomenclador";
+    $("list").innerHTML = res.length ? res.map(function (it) { return card(it, words); }).join("") :
+      '<div class="empty">No hay prácticas que coincidan con "' + esc(q) + '". Probá con parte del nombre o del código.</div>';
+  }
+
+  $("q").addEventListener("input", render);
+  $("clear").addEventListener("click", function () { $("q").value = ""; render(); $("q").focus(); });
+
+  load().then(function (r) {
+    var d = parse(r.wb);
+    state.items = d.items; state.plans = d.plans;
+    var nAud = d.items.filter(function (i) { return i.auditable; }).length;
+    $("vigencia").textContent = d.title || "Nomenclador oftalmológico";
+    $("fuente").textContent = "Datos: " + r.file + " · " + d.items.length + " prácticas · " + nAud + " auditables";
+    renderPlans(); render();
+  }).catch(function (e) {
+    $("vigencia").textContent = "No se pudo cargar el nomenclador";
+    $("list").innerHTML = '<div class="err">' + esc(e.message) + "</div>";
+  });
+})();
+</script>
+</body>
+</html>
