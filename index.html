@@ -116,6 +116,7 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
 (function () {
   // Archivos que se buscan, en orden. Javier reemplaza este archivo para actualizar valores.
   var DATA_FILES = ["aranceles.xlsx", "aranceles.xls"];
+  var AUD_FILE = "auditables.csv";
   var CODE_RE = /^[A-Z]{2}\.\d{2}\.\d{2}$/i;
   var AUDIT_TEXT = "Coseguro definido por auditor";
 
@@ -133,7 +134,7 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
   function round100(v) { return Math.round(v / 100) * 100; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
-  function parse(wb) {
+  function parse(wb, extraAud) {
     var sheetName = wb.SheetNames.find(function (n) { return !/audit/i.test(n); }) || wb.SheetNames[0];
     var rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, raw: true, defval: null });
     var title = "", plans = null, honCol = 2, auditCol = -1, section = "", sub = "", items = [];
@@ -179,13 +180,18 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
     }
 
     // Hoja aparte con la lista de códigos auditables (cualquier celda con un código)
-    var aud = {};
+    var aud = [];
+    function addAud(t) {
+      t = clean(t).toUpperCase().replace(/\.?\*$/, "");
+      if (/^[A-Z]{2}(\.\d{2}){0,2}$/.test(t)) aud.push(t);
+    }
+    String(extraAud || "").split(/[\r\n,;\t]+/).forEach(addAud);
     wb.SheetNames.filter(function (n) { return /audit/i.test(n); }).forEach(function (n) {
       XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: false, defval: null }).forEach(function (row) {
-        (row || []).forEach(function (c) { var t = clean(c); if (CODE_RE.test(t)) aud[t.toUpperCase()] = 1; });
+        (row || []).forEach(addAud);
       });
     });
-    items.forEach(function (it) { if (aud[it.code]) it.auditable = true; it.key = codeKey(it.code); it.text = fold(it.name + " " + it.section + " " + it.sub); });
+    items.forEach(function (it) { if (aud.some(function (a) { return it.code === a || it.code.indexOf(a + ".") === 0; })) it.auditable = true; it.key = codeKey(it.code); it.text = fold(it.name + " " + it.section + " " + it.sub); });
 
     if (!plans || !plans.length) throw new Error("No encontré las columnas de planes (encabezados que empiecen con \"PLAN\").");
     if (!items.length) throw new Error("No encontré prácticas con código (formato XX.00.00) en la columna A.");
@@ -286,8 +292,12 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
   $("q").addEventListener("input", render);
   $("clear").addEventListener("click", function () { $("q").value = ""; render(); $("q").focus(); });
 
-  load().then(function (r) {
-    var d = parse(r.wb);
+  // Lista opcional de auditables en archivo aparte: un código por línea, o un prefijo (TQ = todos los TQ)
+  var audReq = window.EMBEDDED_AUD != null ? Promise.resolve(window.EMBEDDED_AUD) :
+    fetch(AUD_FILE + "?v=" + Date.now(), { cache: "no-store" }).then(function (res) { return res.ok ? res.text() : ""; }, function () { return ""; });
+  Promise.all([load(), audReq]).then(function (all) {
+    var r = all[0];
+    var d = parse(r.wb, all[1]);
     state.items = d.items; state.plans = d.plans;
     var nAud = d.items.filter(function (i) { return i.auditable; }).length;
     $("vigencia").textContent = d.title || "Nomenclador oftalmológico";

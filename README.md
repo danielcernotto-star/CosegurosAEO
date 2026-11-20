@@ -16,7 +16,13 @@ Si se agrega un plan nuevo, basta con agregar su columna "PLAN ..." con el porce
 
 ## Cómo marcar las prácticas auditables
 
-Agregar al Excel una hoja llamada `AUDITABLES` con los códigos, uno por fila (por ejemplo `TQ.06.03`).
-Esas prácticas muestran "Coseguro definido por auditor" en lugar del valor.
+Están en el archivo `auditables.csv`, aparte del Excel de aranceles, así no se pierden cuando se reemplaza el Excel.
+Va un dato por línea, y puede ser:
 
-Alternativa: una columna con encabezado `AUDITABLE` en la fila de encabezados, con "S" en las prácticas auditables.
+- un código completo, por ejemplo `TQ.06.03`, para una sola práctica;
+- un prefijo, por ejemplo `TQ` (todos los tratamientos quirúrgicos) o `TQ.06` (todas las operaciones del cristalino).
+
+Hoy tiene `PE`, `TL` y `TQ`: todo es auditable menos las Prácticas Comunes (PC).
+Se edita desde github.com abriendo el archivo y tocando el lápiz. Esas prácticas muestran "Coseguro definido por auditor" en lugar del valor.
+
+También se puede usar una hoja llamada `AUDITABLES` dentro del Excel, con el mismo formato.
