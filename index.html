@@ -118,7 +118,7 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
   var DATA_FILES = ["aranceles.xlsx", "aranceles.xls"];
   var AUD_FILE = "auditables.csv";
   var CODE_RE = /^[A-Z]{2}\.\d{2}\.\d{2}$/i;
-  var AUDIT_TEXT = "Coseguro definido por auditor";
+  var AUDIT_TEXT = "Práctica auditable: coseguro a criterio de la auditoría";
 
   var state = { items: [], plans: [], plan: "todos" };
   try { var saved = localStorage.getItem("coseguros-plan"); if (saved) state.plan = saved; } catch (e) {}
@@ -264,12 +264,15 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
       highlight(it.name, words) + "</span></div>";
     html += '<div class="meta"><span>' + esc(it.section + (it.sub ? " · " + it.sub : "")) + "</span>" + (it.porOjo ? '<span class="tag">Por ojo</span>' : "") + "</div>";
     if (it.auditable) {
-      html += '<div class="notice">' + AUDIT_TEXT + "<small>Práctica auditable: el coseguro lo informa el auditor de la mutual.</small></div>";
-    } else if (it.hon == null) {
+      html += '<div class="notice">' + AUDIT_TEXT + "<small>" + (it.hon == null ? "El coseguro lo define el auditor de la mutual." :
+        "Los valores de abajo son de referencia. El coseguro final lo define el auditor de la mutual.") + "</small></div>";
+    }
+    if (it.hon == null) {
+      if (!it.auditable)
       html += '<div class="notice">Sin honorario fijo en el nomenclador' + (it.honText ? " (" + esc(it.honText) + ")" : "") + "<small>Consultar el coseguro con la mutual.</small></div>";
     } else if (state.plan !== "todos") {
       var p = state.plans.find(function (x) { return x.label === state.plan; });
-      html += '<div class="single"><span class="p">Plan ' + esc(p.label) + " · " + Math.round(p.pct * 100) + '% del honorario</span><span class="n">' + valueHtml(it, p) + "</span></div>";
+      html += '<div class="single"><span class="p">Plan ' + esc(p.label) + " · " + Math.round(p.pct * 100) + '% del honorario' + (it.auditable ? " · referencia" : "") + '</span><span class="n">' + valueHtml(it, p) + "</span></div>";
     } else {
       html += '<div class="vals">' + state.plans.map(function (p) {
         return '<div class="val"><span class="p">Plan ' + esc(p.label) + " · " + Math.round(p.pct * 100) + '%</span><span class="n">' + valueHtml(it, p) + "</span></div>";

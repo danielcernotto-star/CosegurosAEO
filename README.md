@@ -23,6 +23,6 @@ Va un dato por línea, y puede ser:
 - un prefijo, por ejemplo `TQ` (todos los tratamientos quirúrgicos) o `TQ.06` (todas las operaciones del cristalino).
 
 Hoy tiene `PE`, `TL` y `TQ`: todo es auditable menos las Prácticas Comunes (PC).
-Se edita desde github.com abriendo el archivo y tocando el lápiz. Esas prácticas muestran "Coseguro definido por auditor" en lugar del valor.
+Se edita desde github.com abriendo el archivo y tocando el lápiz. Esas prácticas muestran el coseguro calculado como valor de referencia, con el aviso de que el coseguro final queda a criterio de la auditoría.
 
 También se puede usar una hoja llamada `AUDITABLES` dentro del Excel, con el mismo formato.
