@@ -294,6 +294,7 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
       }).join("") + "</div>";
     }
     if (it.hon != null && isConsulta(it)) html += '<div class="hon">Desde la 3ª consulta del mes: ' + money.format(CONSULTA_EXTRA) + " (PMO " + money.format(CONSULTA_EXTRA_PMO) + ").</div>";
+    if (it.hon != null) html += '<div class="hon">Honorario: ' + money.format(it.hon) + "</div>";
     return html + "</div>";
   }
 
