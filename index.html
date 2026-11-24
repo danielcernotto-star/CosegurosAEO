@@ -105,7 +105,7 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
   <div id="list"><div class="empty">Cargando…</div></div>
 
   <footer>
-    <div>Coseguro = honorario × porcentaje del plan, redondeado a $1.000 (igual que SGAP). La consulta tiene monto fijo. Valores en pesos, sin IVA.</div>
+    <div>Coseguros calculados igual que SGAP. Valores en pesos, sin IVA.</div>
     <div>Prácticas quirúrgicas y de láser, y las marcadas "por ojo": el valor es por cada ojo.</div>
     <div id="fuente"></div>
   </footer>
@@ -141,11 +141,11 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
   var CONSULTA_FIJO = 9000, CONSULTA_EXTRA = 10000, CONSULTA_EXTRA_PMO = 12000;
   function isConsulta(it) { return CONSULTA_CODES.indexOf(it.code) >= 0; }
   function isPmo(p) { return p.pct >= 0.9; }
-  // Devuelve { value, rule } con el coseguro del plan p, o null si no hay honorario
+  // Devuelve { value } con el coseguro del plan p, o null si no hay honorario
   function coseguro(it, p) {
     if (it.hon == null) return null;
-    if (isConsulta(it)) return isPmo(p) ? { value: round100(it.hon), rule: "100% del honorario" } : { value: CONSULTA_FIJO, rule: "monto fijo" };
-    return { value: round1000(it.hon * p.pct), rule: Math.round(p.pct * 100) + "% del honorario" };
+    if (isConsulta(it)) return isPmo(p) ? { value: round100(it.hon) } : { value: CONSULTA_FIJO };
+    return { value: round1000(it.hon * p.pct) };
   }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
@@ -287,14 +287,13 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
       html += '<div class="notice">Sin honorario fijo en el nomenclador' + (it.honText ? " (" + esc(it.honText) + ")" : "") + "<small>Consultar el coseguro con la mutual.</small></div>";
     } else if (state.plan !== "todos") {
       var p = state.plans.find(function (x) { return x.label === state.plan; });
-      html += '<div class="single"><span class="p">Plan ' + esc(p.label) + " · " + coseguro(it, p).rule + (it.auditable ? " · referencia" : "") + '</span><span class="n">' + valueHtml(it, p) + "</span></div>";
+      html += '<div class="single"><span class="p">Plan ' + esc(p.label) + (it.auditable ? " · referencia" : "") + '</span><span class="n">' + valueHtml(it, p) + "</span></div>";
     } else {
       html += '<div class="vals">' + state.plans.map(function (p) {
-        return '<div class="val"><span class="p">Plan ' + esc(p.label) + " · " + (isConsulta(it) ? coseguro(it, p).rule : Math.round(p.pct * 100) + "%") + '</span><span class="n">' + valueHtml(it, p) + "</span></div>";
+        return '<div class="val"><span class="p">Plan ' + esc(p.label) + '</span><span class="n">' + valueHtml(it, p) + "</span></div>";
       }).join("") + "</div>";
     }
     if (it.hon != null && isConsulta(it)) html += '<div class="hon">Desde la 3ª consulta del mes: ' + money.format(CONSULTA_EXTRA) + " (PMO " + money.format(CONSULTA_EXTRA_PMO) + ").</div>";
-    if (it.hon != null) html += '<div class="hon">Honorario: ' + money.format(it.hon) + "</div>";
     return html + "</div>";
   }
 
