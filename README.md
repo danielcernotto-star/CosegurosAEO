@@ -11,12 +11,7 @@ Archivos que se publican juntos en el hosting:
 2. Lo guarda con el nombre `aranceles.xls` (o `aranceles.xlsx`) y reemplaza el archivo en el hosting.
 3. La web toma los valores nuevos al recargar. No hay que tocar nada más.
 
-La web calcula el coseguro igual que SGAP (convenio AEO 10354 / 10372):
-
-- Prácticas: honorario × porcentaje del plan, redondeado al $1.000 más cercano.
-- Consulta (PC.01.02): monto fijo de $9.000 en los planes de hasta 60%, y 100% del honorario en los planes de 90% (PMO), redondeado a $100. Desde la 3ª consulta del mes: $10.000 (PMO $12.000).
-
-Los montos fijos de la consulta están al principio del script de `index.html` (`CONSULTA_FIJO`, `CONSULTA_EXTRA`, `CONSULTA_EXTRA_PMO`); si SGAP los cambia, hay que cambiarlos ahí.
+La web calcula el coseguro de cada código del Excel como honorario × porcentaje del plan, redondeado al $1.000 más cercano (igual que SGAP para AEO). No hay reglas especiales por código: solo se muestran los códigos que están en el Excel.
 La web ignora las columnas de valores ya calculados del Excel (esas truncan a $1.000 y no coinciden con SGAP).
 Si se agrega un plan nuevo, basta con agregar su columna "PLAN ..." con el porcentaje arriba.
 
