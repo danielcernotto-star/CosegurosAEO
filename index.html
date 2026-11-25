@@ -133,18 +133,10 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
   function yes(v) { return /^(s|si|sí|x|1|true|auditable)$/i.test(clean(v)); }
   function round100(v) { return Math.round(v / 100) * 100; }
   function round1000(v) { return Math.round(v / 1000) * 1000; }
-
-  // Reglas de SGAP para AEO (convenio prestador 10354 / 10372).
-  // Consulta: monto fijo para los planes de hasta 60%; en los planes de 90% (PMO) se cobra el 100% del honorario.
-  // Desde la 3ª consulta del mes: CONSULTA_EXTRA / CONSULTA_EXTRA_PMO.
-  var CONSULTA_CODES = ["PC.01.02"];
-  var CONSULTA_FIJO = 9000, CONSULTA_EXTRA = 10000, CONSULTA_EXTRA_PMO = 12000;
-  function isConsulta(it) { return CONSULTA_CODES.indexOf(it.code) >= 0; }
-  function isPmo(p) { return p.pct >= 0.9; }
+  // Coseguro = honorario del Excel × porcentaje del plan, redondeado al $1.000 más cercano (como SGAP para AEO).
   // Devuelve { value } con el coseguro del plan p, o null si no hay honorario
   function coseguro(it, p) {
     if (it.hon == null) return null;
-    if (isConsulta(it)) return isPmo(p) ? { value: round100(it.hon) } : { value: CONSULTA_FIJO };
     return { value: round1000(it.hon * p.pct) };
   }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -293,7 +285,6 @@ footer { color: var(--muted); font-size: 0.8rem; display: flex; flex-direction: 
         return '<div class="val"><span class="p">Plan ' + esc(p.label) + '</span><span class="n">' + valueHtml(it, p) + "</span></div>";
       }).join("") + "</div>";
     }
-    if (it.hon != null && isConsulta(it)) html += '<div class="hon">Desde la 3ª consulta del mes: ' + money.format(CONSULTA_EXTRA) + " (PMO " + money.format(CONSULTA_EXTRA_PMO) + ").</div>";
     if (it.hon != null) html += '<div class="hon">Honorario: ' + money.format(it.hon) + "</div>";
     return html + "</div>";
   }
